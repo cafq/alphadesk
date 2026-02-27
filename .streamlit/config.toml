@@ -1,0 +1,15 @@
+[theme]
+# Couleur principale (Boutons, curseurs, etc. - ici un Indigo "Fintech")
+primaryColor = "#4F46E5"
+
+# Couleur de fond principale de l'app (un gris très clair/doux)
+backgroundColor = "#F8FAFC"
+
+# Couleur de fond secondaire (barre latérale, fond des graphiques - Blanc pur)
+secondaryBackgroundColor = "#FFFFFF"
+
+# Couleur du texte (Gris très foncé, plus doux que le noir pur)
+textColor = "#1E293B"
+
+# Police d'écriture moderne et épurée
+font = "sans serif"
