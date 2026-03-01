@@ -1,10 +1,10 @@
-# pages/8_ESG.py
-
+# pages/8_ESG.py — STYLE IDENTIQUE À Markets.py
 import streamlit as st
 import sqlite3
 import pandas as pd
 import os
 import yfinance as yf
+
 
 # ───────────────────────────────────────
 # CONFIG
@@ -16,8 +16,28 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
+
 # ───────────────────────────────────────
-# STYLE
+# HEADER [EXACTEMENT COMME MARKETS]
+# ───────────────────────────────────────
+st.markdown("""
+<div style='padding: 30px 0 10px 0; text-align: center;'>
+    <div style='font-size:2.2rem; font-weight:800; color:#ffffff; letter-spacing:-0.04em;'>
+        Alpha<span style='color:#4F46E5;'>Desk</span>
+        <span style='font-size:1.1rem; font-weight:500; color:#8b9ab0; margin-left:12px;'>/ ESG & Éthique </span>
+    </div>
+    <p style='color:#8b9ab0; font-size:0.88rem; margin-top:8px;'>
+        Investit selon tes valeurs · Scores Environnement/Social/Gouvernance · Secteurs sensibles
+    </p>
+</div>
+""", unsafe_allow_html=True)
+
+
+st.divider()
+
+
+# ───────────────────────────────────────
+# STYLE [EXACTEMENT COMME Markets.py]
 # ───────────────────────────────────────
 st.markdown("""
     <style>
@@ -29,18 +49,27 @@ st.markdown("""
         background-color: #13161d;
         border-right: 1px solid #2a2d35;
     }
+    section[data-testid="stSidebar"] span { color: #e0e0e0 !important; }
+    section[data-testid="stSidebar"] [aria-selected="true"] span {
+        color: #4F46E5 !important; font-weight: 600 !important;
+    }
     .stMetric {
         background-color: #1c1f26;
-        padding: 16px;
+        padding: 15px;
         border-radius: 8px;
         border: 1px solid #2a2d35;
     }
     .stMetric label {
         color: #8b9ab0 !important;
-        font-size: 0.7rem !important;
-        font-weight: 600 !important;
+        font-size: 0.75rem !important;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.08em;
+    }
+    h1, h2, h3 { color: #ffffff !important; font-weight: 600 !important; }
+    .stSelectbox label, .stTextInput label {
+        color: #8b9ab0 !important;
+        font-size: 0.8rem !important;
+        text-transform: uppercase;
     }
     .caption { color: #555e6e !important; font-size: 0.75rem; }
     .stTextInput input {
@@ -58,54 +87,38 @@ st.markdown("""
         font-size: 0.8rem !important;
     }
     div.stButton > button:hover { background-color: #4338ca !important; }
+    .section-label {
+        color: #8b9ab0;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        margin-bottom: 12px;
+    }
+
+    /* ESG SPECIFIQUE - AJOUTÉ POUR TES CARTES */
     .esg-card {
-        background: #1c1f26;
+        background-color: #1c1f26;
         border: 1px solid #2a2d35;
         border-radius: 10px;
         padding: 20px 24px;
         margin-bottom: 10px;
     }
-    .esg-ticker { font-size: 1.0rem; font-weight: 700; color: #ffffff; letter-spacing: -0.01em; }
-    .esg-sector { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 2px; }
-    .esg-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: #555e6e; margin-bottom: 4px; }
+    .esg-ticker { font-size: 1.0rem; font-weight: 700; color: #ffffff; }
+    .esg-sector { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; margin-top: 2px; }
+    .esg-label { font-size: 0.68rem; font-weight: 600; text-transform: uppercase; color: #555e6e; margin-bottom: 4px; }
     .esg-score { font-size: 1.1rem; font-weight: 700; color: #e0e0e0; }
     .esg-bar-wrap { background: #2a2d35; border-radius: 4px; height: 5px; margin-top: 6px; overflow: hidden; }
     .esg-bar-fill { height: 5px; border-radius: 4px; }
-    .section-label { color: #8b9ab0; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 14px; }
     .api-badge {
-        display: inline-block;
-        font-size: 0.62rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 20px;
-        text-transform: uppercase;
-        letter-spacing: 0.08em;
-        margin-left: 8px;
-        vertical-align: middle;
+        display: inline-block; font-size: 0.62rem; font-weight: 700;
+        padding: 2px 8px; border-radius: 20px; text-transform: uppercase;
+        margin-left: 8px; vertical-align: middle;
     }
-    .badge-auto { background: #1a3a2a; color: #22c55e; border: 1px solid #22c55e44; }
-    .badge-manual { background: #1e1e2e; color: #8b9ab0; border: 1px solid #2a2d35; }
+    .badge-auto { background:#1a3a2a; color:#22c55e; border:1px solid #22c55e44; }
+    .badge-manual { background:#1e1e2e; color:#8b9ab0; border:1px solid #2a2d35; }
     </style>
 """, unsafe_allow_html=True)
-
-
-# ───────────────────────────────────────
-# HEADER
-# ───────────────────────────────────────
-st.markdown("""
-<div style='padding: 30px 0 10px 0; text-align: center;'>
-    <div style='font-size:2.2rem; font-weight:800; color:#ffffff; letter-spacing:-0.04em;'>
-        Alpha<span style='color:#4F46E5;'>Desk</span>
-        <span style='font-size:1.1rem; font-weight:500; color:#8b9ab0; margin-left:12px;'>/ ESG & Éthique</span>
-    </div>
-    <p style='color:#8b9ab0; font-size:0.88rem; margin-top:8px;'>
-        Investis selon tes valeurs — scores environnementaux, sociaux & gouvernance
-    </p>
-</div>
-""", unsafe_allow_html=True)
-
-st.divider()
-
 
 # ───────────────────────────────────────
 # BASE DE DONNÉES
@@ -113,6 +126,7 @@ st.divider()
 def get_esg_db():
     os.makedirs("data", exist_ok=True)
     conn = sqlite3.connect("data/esg_data.db", check_same_thread=False)
+
 
     conn.execute("""
         CREATE TABLE IF NOT EXISTS esg_profiles (
@@ -126,6 +140,7 @@ def get_esg_db():
         )
     """)
 
+
     # ── MIGRATION : ajoute 'source' si ancienne DB sans cette colonne ──
     existing_cols = [
         row[1] for row in conn.execute("PRAGMA table_info(esg_profiles)").fetchall()
@@ -133,6 +148,7 @@ def get_esg_db():
     if "source" not in existing_cols:
         conn.execute("ALTER TABLE esg_profiles ADD COLUMN source TEXT DEFAULT 'manual'")
         conn.commit()
+
 
     conn.execute("""
         INSERT OR IGNORE INTO esg_profiles VALUES
@@ -153,11 +169,13 @@ def get_esg_db():
     return conn
 
 
+
 def load_esg_profiles():
     conn = get_esg_db()
     df = pd.read_sql("SELECT * FROM esg_profiles ORDER BY total_esg_score DESC", conn)
     conn.close()
     return df
+
 
 def save_esg(ticker, env, soc, gov, sector, source="manual"):
     total = round((env + soc + gov) / 3, 1)
@@ -170,10 +188,12 @@ def save_esg(ticker, env, soc, gov, sector, source="manual"):
     conn.close()
     return total
 
+
 def score_color(score):
     if score >= 70: return "#22c55e"
     elif score >= 50: return "#f59e0b"
     else: return "#ef4444"
+
 
 def sector_color(sector):
     return {
@@ -183,6 +203,7 @@ def sector_color(sector):
         "healthcare": "#06b6d4", "luxury": "#ec4899",
         "gaming": "#8b5cf6", "others": "#8b9ab0",
     }.get(sector, "#8b9ab0")
+
 
 
 # ───────────────────────────────────────
@@ -197,8 +218,10 @@ def fetch_esg_from_yfinance(ticker: str):
         t = yf.Ticker(ticker)
         sus = t.sustainability
 
+
         if sus is None or sus.empty:
             return None
+
 
         # yfinance renvoie un DataFrame avec des index comme
         # 'environmentScore', 'socialScore', 'governanceScore', 'totalEsg'
@@ -210,18 +233,22 @@ def fetch_esg_from_yfinance(ticker: str):
             except:
                 return None
 
+
         env   = get_val("environmentScore")
         soc   = get_val("socialScore")
         gov   = get_val("governanceScore")
         total = get_val("totalEsg")
 
+
         if not any([env, soc, gov]):
             return None
+
 
         env   = env   or 50.0
         soc   = soc   or 50.0
         gov   = gov   or 50.0
         total = total or round((env + soc + gov) / 3, 1)
+
 
         # Secteur via info
         info   = t.info
@@ -241,6 +268,7 @@ def fetch_esg_from_yfinance(ticker: str):
         }
         sector = sector_map.get(sector_raw, "others")
 
+
         return {
             "env": min(env, 100.0),
             "soc": min(soc, 100.0),
@@ -252,10 +280,12 @@ def fetch_esg_from_yfinance(ticker: str):
         return None
 
 
+
 # ───────────────────────────────────────
 # RECHERCHE / AJOUT VIA API
 # ───────────────────────────────────────
 st.markdown("<p class='section-label'>🔎 Rechercher un actif</p>", unsafe_allow_html=True)
+
 
 search_col1, search_col2 = st.columns([4, 1])
 with search_col1:
@@ -267,10 +297,12 @@ with search_col1:
 with search_col2:
     search_btn = st.button("Rechercher", use_container_width=True)
 
+
 if search_btn and search_ticker:
     ticker_clean = search_ticker.upper().strip()
     with st.spinner(f"Récupération des données ESG pour {ticker_clean}..."):
         result = fetch_esg_from_yfinance(ticker_clean)
+
 
     if result:
         st.markdown(f"""
@@ -304,6 +336,7 @@ if search_btn and search_ticker:
         </div>
         """, unsafe_allow_html=True)
 
+
         if st.button(f"💾 Sauvegarder {ticker_clean} dans ma base ESG", use_container_width=True):
             save_esg(ticker_clean, result["env"], result["soc"], result["gov"], result["sector"], source="yahoo_finance")
             st.success(f"✅ {ticker_clean} sauvegardé !")
@@ -314,13 +347,16 @@ if search_btn and search_ticker:
             "Tu peux l'ajouter manuellement ci-dessous."
         )
 
+
 st.divider()
+
 
 
 # ───────────────────────────────────────
 # FILTRES
 # ───────────────────────────────────────
 st.markdown("<p class='section-label'>Filtres par valeurs</p>", unsafe_allow_html=True)
+
 
 col_f1, col_f2 = st.columns([3, 1])
 with col_f1:
@@ -334,7 +370,9 @@ with col_f1:
 with col_f2:
     show_only_clean = st.toggle("Filtrer", value=False)
 
+
 st.divider()
+
 
 
 # ───────────────────────────────────────
@@ -342,13 +380,16 @@ st.divider()
 # ───────────────────────────────────────
 df = load_esg_profiles()
 
+
 if show_only_clean and sectors_to_avoid:
     df = df[~df["sector"].isin(sectors_to_avoid)]
+
 
 if df.empty:
     st.info("Aucun actif ne correspond à ces filtres.")
 else:
     st.markdown("<p class='section-label'>Profils ESG sauvegardés</p>", unsafe_allow_html=True)
+
 
     for _, row in df.iterrows():
         env   = float(row["environment_score"])
@@ -359,6 +400,7 @@ else:
         tick  = row["ticker"]
         src   = row.get("source", "manual")
         badge = '<span class="api-badge badge-auto">✓ Yahoo Finance</span>' if src == "yahoo_finance" else '<span class="api-badge badge-manual">Manuel</span>'
+
 
         st.markdown(f"""
         <div class='esg-card'>
@@ -393,11 +435,13 @@ else:
         """, unsafe_allow_html=True)
 
 
+
 # ───────────────────────────────────────
 # SECTION PÉDAGOGIQUE
 # ───────────────────────────────────────
 st.divider()
 st.markdown("<p class='section-label'>Qu'est-ce que l'ESG ?</p>", unsafe_allow_html=True)
+
 
 col_e1, col_e2, col_e3 = st.columns(3)
 with col_e1:
@@ -420,11 +464,13 @@ with col_e3:
         </p></div>""", unsafe_allow_html=True)
 
 
+
 # ───────────────────────────────────────
 # AJOUT MANUEL
 # ───────────────────────────────────────
 st.divider()
 st.markdown("<p class='section-label'>Ajouter manuellement un actif</p>", unsafe_allow_html=True)
+
 
 with st.form("add_esg_ticker"):
     a1, a2 = st.columns([2, 2])
@@ -432,6 +478,7 @@ with st.form("add_esg_ticker"):
         ticker_input = st.text_input("Ticker", placeholder="ex: TSLA, XOM, JNJ")
     with a2:
         sector_input = st.text_input("Secteur", placeholder="ex: tech, fossil_fuel, clean_energy...")
+
 
     b1, b2, b3 = st.columns(3)
     with b1:
@@ -441,7 +488,9 @@ with st.form("add_esg_ticker"):
     with b3:
         gov_score = st.slider("🏛️ Gouvernance", 0, 100, 50)
 
+
     submitted = st.form_submit_button("Ajouter / Mettre à jour", use_container_width=True)
+
 
     if submitted:
         if ticker_input and sector_input:
@@ -451,8 +500,8 @@ with st.form("add_esg_ticker"):
         else:
             st.error("⚠️ Remplis le ticker et le secteur")
 
+
 st.divider()
 st.markdown(
     "<p class='caption' style='text-align:center;'>AlphaDesk v1.0 &nbsp;·&nbsp; ESG Module · Yahoo Finance</p>",
-    unsafe_allow_html=True,
-)
+    unsafe_allow_html=True,)
