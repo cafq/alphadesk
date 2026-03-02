@@ -3,6 +3,8 @@
 import streamlit as st
 import yfinance as yf
 from dotenv import load_dotenv
+import json
+import os
 
 load_dotenv()
 
@@ -10,6 +12,23 @@ load_dotenv()
 # CONFIG
 # ───────────────────────────────────────
 DEFAULT_WATCHLIST = ["BTC-USD", "ETH-USD", "AAPL", "EURUSD=X", "^GSPC", "GC=F"]
+WATCHLIST_FILE = "data_watchlist.json"
+
+def load_watchlist():
+    if os.path.exists(WATCHLIST_FILE):
+        try:
+            with open(WATCHLIST_FILE, "r") as f:
+                return json.load(f)
+        except:
+            return DEFAULT_WATCHLIST.copy()
+    return DEFAULT_WATCHLIST.copy()
+
+def save_watchlist():
+    try:
+        with open(WATCHLIST_FILE, "w") as f:
+            json.dump(st.session_state.watchlist, f)
+    except:
+        pass
 
 st.set_page_config(
     page_title="AlphaDesk",
