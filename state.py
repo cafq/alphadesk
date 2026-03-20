@@ -6,7 +6,6 @@ import extra_streamlit_components as stx
 
 DEFAULT_WATCHLIST = ["BTC-USD", "ETH-USD", "AAPL", "EURUSD=X", "^GSPC", "GC=F"]
 
-@st.cache_resource
 def get_cookie_manager():
     return stx.CookieManager()
 
@@ -48,3 +47,40 @@ def init_state():
     # Période active (partagée entre pages)
     if "active_period" not in st.session_state:
         st.session_state.active_period = load_cookie("active_period", "1y")
+# state.py
+
+import streamlit as st
+
+DEFAULT_WATCHLIST = ["BTC-USD", "ETH-USD", "AAPL", "EURUSD=X", "^GSPC", "GC=F"]
+
+def save_cookie(key: str, value):
+    """No-op — persistance via session_state uniquement."""
+    pass
+
+def load_cookie(key: str, default=None):
+    """No-op — retourne toujours le défaut."""
+    return default
+
+def init_state():
+    """À appeler en haut de CHAQUE page."""
+
+    if "watchlist" not in st.session_state:
+        st.session_state.watchlist = DEFAULT_WATCHLIST.copy()
+
+    if "active_ticker" not in st.session_state:
+        st.session_state.active_ticker = "AAPL"
+
+    if "screener_tickers" not in st.session_state:
+        st.session_state.screener_tickers = []
+
+    if "custom_strategies" not in st.session_state:
+        st.session_state.custom_strategies = {}
+
+    if "portfolio_tickers" not in st.session_state:
+        st.session_state.portfolio_tickers = []
+
+    if "active_period" not in st.session_state:
+        st.session_state.active_period = "1y"
+
+    if "portfolio_input" not in st.session_state:
+        st.session_state.portfolio_input = "AAPL\nMSFT\nNVDA"
