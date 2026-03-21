@@ -79,24 +79,6 @@ st.markdown("""
         letter-spacing: 0.1em;
         margin-bottom: 12px;
     }
-    /* Améliorer lisibilité */
-    div[data-testid="stMetricValue"] {
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #A0AEC0 !important;
-        font-weight: 500 !important;
-    }
-    div[data-testid="stMetricDelta"] {
-        font-weight: 600 !important;
-    }
-    p, li, span {
-        color: #E2E8F0 !important;
-    }
-    .stDataFrame td, .stDataFrame th {
-        color: #E2E8F0 !important;
-    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -463,154 +445,26 @@ fig.update_layout(
 fig.update_xaxes(gridcolor="#1e2228", showgrid=True, zeroline=False)
 fig.update_yaxes(gridcolor="#1e2228", showgrid=True, zeroline=False)
 
-tab_analyse, tab_comparateur = st.tabs(["📈 Analyse", "📊 Comparateur"])
+st.plotly_chart(fig, use_container_width=True)
 
-with tab_analyse:
-    st.plotly_chart(fig, use_container_width=True)
 
-    # ───────────────────────────────────────
-    # DONNÉES FONDAMENTALES
-    # ───────────────────────────────────────
-    st.divider()
-    st.markdown("<p class='section-label'>Données fondamentales</p>", unsafe_allow_html=True)
+# ───────────────────────────────────────
+# DONNÉES FONDAMENTALES
+# ───────────────────────────────────────
+st.divider()
+st.markdown("<p class='section-label'>Données fondamentales</p>", unsafe_allow_html=True)
 
-    try:
-        info = yf.Ticker(ticker_input.upper()).info
-        f1, f2, f3, f4, f5, f6 = st.columns(6)
-        f1.metric("Market Cap",  f"{info.get('marketCap',0)/1e9:.2f}B" if info.get('marketCap') else "—")
-        f2.metric("PE Ratio",    f"{info.get('trailingPE','—'):.2f}"   if isinstance(info.get('trailingPE'), float) else "—")
-        f3.metric("52W High",    f"{info.get('fiftyTwoWeekHigh','—')}")
-        f4.metric("52W Low",     f"{info.get('fiftyTwoWeekLow','—')}")
-        f5.metric("Dividend",    f"{info.get('dividendYield',0)*100:.2f}%" if info.get('dividendYield') else "—")
-        f6.metric("Beta",        f"{info.get('beta','—'):.2f}"             if isinstance(info.get('beta'), float) else "—")
-    except:
-        st.info("Données fondamentales non disponibles pour ce ticker.")
-
-with tab_comparateur:
-    cmp_col1, cmp_col2 = st.columns([3, 1])
-    with cmp_col1:
-        cmp_tickers_input = st.text_input(
-            "TICKERS À COMPARER",
-            value="AAPL, MSFT, GOOGL, BTC-USD",
-            key="markets_compare_tickers",
-        )
-    with cmp_col2:
-        cmp_period = st.selectbox(
-            "PÉRIODE COMPARATEUR",
-            ["1mo", "3mo", "6mo", "1y", "2y", "5y"],
-            index=3,
-            key="markets_compare_period",
-        )
-
-    if st.button("COMPARER", key="markets_compare_button"):
-        cmp_tickers = [t.strip().upper() for t in cmp_tickers_input.split(",") if t.strip()]
-        if not cmp_tickers:
-            st.warning("Ajoute au moins un ticker valide.")
-        else:
-            try:
-                cmp_raw = yf.download(cmp_tickers, period=cmp_period, interval="1d", auto_adjust=True, progress=False)
-            except:
-                cmp_raw = pd.DataFrame()
-
-            if cmp_raw.empty:
-                st.error("Impossible de charger les données du comparateur.")
-            else:
-                if isinstance(cmp_raw.columns, pd.MultiIndex):
-                    cmp_close = cmp_raw["Close"].copy()
-                else:
-                    cmp_close = cmp_raw[["Close"]].copy()
-                    cmp_close.columns = [cmp_tickers[0]]
-
-                cmp_close = cmp_close.dropna(axis=1, how="all").dropna(how="all")
-                if cmp_close.empty:
-                    st.error("Aucune donnée exploitable pour les tickers sélectionnés.")
-                else:
-                    cmp_norm = (cmp_close / cmp_close.iloc[0]) * 100
-                    cmp_returns = cmp_close.pct_change().dropna(how="all")
-
-                    cmp_fig = go.Figure()
-                    for c in cmp_norm.columns:
-                        cmp_fig.add_trace(go.Scatter(
-                            x=cmp_norm.index, y=cmp_norm[c],
-                            mode="lines", name=c, line=dict(width=2)
-                        ))
-                    cmp_fig.update_layout(
-                        height=420,
-                        paper_bgcolor="#0e1117",
-                        plot_bgcolor="#0e1117",
-                        font=dict(family="Inter", color="#8b9ab0", size=11),
-                        margin=dict(l=10, r=10, t=30, b=10),
-                        legend=dict(bgcolor="rgba(0,0,0,0)"),
-                        hovermode="x unified",
-                    )
-                    cmp_fig.update_xaxes(gridcolor="#1e2228", showgrid=True, zeroline=False)
-                    cmp_fig.update_yaxes(gridcolor="#1e2228", showgrid=True, zeroline=False)
-                    st.plotly_chart(cmp_fig, use_container_width=True)
-
-                    st.markdown("<p class='section-label'>Métriques comparatives</p>", unsafe_allow_html=True)
-                    for c in cmp_close.columns:
-                        s = cmp_close[c].dropna()
-                        r = s.pct_change().dropna()
-                        perf = ((s.iloc[-1] / s.iloc[0]) - 1) * 100 if len(s) > 1 else 0.0
-                        vol_ann = r.std() * np.sqrt(252) * 100 if not r.empty else 0.0
-                        cum = (1 + r).cumprod() if not r.empty else pd.Series(dtype=float)
-                        max_dd = ((cum / cum.cummax()) - 1).min() * 100 if not cum.empty else 0.0
-                        a, b, d, e = st.columns([1.2, 1, 1, 1])
-                        a.markdown(f"**{c}**")
-                        b.metric("Performance", f"{perf:+.2f}%")
-                        d.metric("Vol annualisée", f"{vol_ann:.2f}%")
-                        e.metric("Drawdown max", f"{max_dd:.2f}%")
-
-                    if len(cmp_returns.columns) >= 2 and not cmp_returns.empty:
-                        corr = cmp_returns.corr()
-                        heat = go.Figure(data=go.Heatmap(
-                            z=corr.values,
-                            x=corr.columns,
-                            y=corr.index,
-                            zmin=-1,
-                            zmax=1,
-                            colorscale="RdBu",
-                            reversescale=True,
-                        ))
-                        heat.update_layout(
-                            height=420,
-                            paper_bgcolor="#0e1117",
-                            plot_bgcolor="#0e1117",
-                            font=dict(family="Inter", color="#8b9ab0", size=11),
-                            margin=dict(l=10, r=10, t=30, b=10),
-                        )
-                        st.plotly_chart(heat, use_container_width=True)
-                    else:
-                        st.info("Corrélation indisponible (au moins 2 séries nécessaires).")
-
-                    rf = 0.045
-                    sharpe_rows = []
-                    for c in cmp_close.columns:
-                        r = cmp_close[c].pct_change().dropna()
-                        if r.empty:
-                            ann_ret = np.nan
-                            ann_vol_dec = np.nan
-                            sharpe = np.nan
-                        else:
-                            ann_ret = (1 + r).prod() ** (252 / len(r)) - 1
-                            ann_vol_dec = r.std() * np.sqrt(252)
-                            sharpe = (ann_ret - rf) / ann_vol_dec if ann_vol_dec and ann_vol_dec > 0 else np.nan
-                        sharpe_rows.append({
-                            "Ticker": c,
-                            "Rendement annualisé (%)": ann_ret * 100 if pd.notna(ann_ret) else np.nan,
-                            "Volatilité annualisée (%)": ann_vol_dec * 100 if pd.notna(ann_vol_dec) else np.nan,
-                            "Sharpe (rf=4.5%)": sharpe,
-                        })
-
-                    sharpe_df = pd.DataFrame(sharpe_rows).sort_values("Sharpe (rf=4.5%)", ascending=False)
-                    st.dataframe(
-                        sharpe_df.style.format({
-                            "Rendement annualisé (%)": "{:.2f}",
-                            "Volatilité annualisée (%)": "{:.2f}",
-                            "Sharpe (rf=4.5%)": "{:.2f}",
-                        }),
-                        use_container_width=True,
-                    )
+try:
+    info = yf.Ticker(ticker_input.upper()).info
+    f1, f2, f3, f4, f5, f6 = st.columns(6)
+    f1.metric("Market Cap",  f"{info.get('marketCap',0)/1e9:.2f}B" if info.get('marketCap') else "—")
+    f2.metric("PE Ratio",    f"{info.get('trailingPE','—'):.2f}"   if isinstance(info.get('trailingPE'), float) else "—")
+    f3.metric("52W High",    f"{info.get('fiftyTwoWeekHigh','—')}")
+    f4.metric("52W Low",     f"{info.get('fiftyTwoWeekLow','—')}")
+    f5.metric("Dividend",    f"{info.get('dividendYield',0)*100:.2f}%" if info.get('dividendYield') else "—")
+    f6.metric("Beta",        f"{info.get('beta','—'):.2f}"             if isinstance(info.get('beta'), float) else "—")
+except:
+    st.info("Données fondamentales non disponibles pour ce ticker.")
 
 st.divider()
 st.markdown(

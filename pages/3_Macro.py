@@ -4,7 +4,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objects as go
 import os
-import requests
 from dotenv import load_dotenv
 from fredapi import Fred
 
@@ -14,7 +13,6 @@ FRED_KEY = os.getenv("FRED_KEY")
 if not FRED_KEY:
     st.error("⚠️ Clé FRED manquante — ajoute FRED_KEY dans ton fichier .env")
     st.stop()
-FINNHUB_KEY = os.getenv("FINNHUB_KEY")
 
 fred = Fred(api_key=FRED_KEY)
 
@@ -81,50 +79,6 @@ st.markdown("""
         letter-spacing: 0.1em;
         color: #8b9ab0;
         margin-bottom: 4px;
-    }
-    /* Tabs prennent toute la largeur */
-    div[data-testid="stTabs"] > div:first-child {
-        overflow-x: auto !important;
-        white-space: nowrap !important;
-    }
-    .stTabs [data-baseweb="tab-list"] {
-        width: 100% !important;
-        gap: 0px !important;
-    }
-    .stTabs [data-baseweb="tab"] {
-        flex: 1 !important;
-        justify-content: center !important;
-    }
-
-    /* Toutes les metric cards à la même taille */
-    div[data-testid="stMetric"] {
-        min-height: 100px !important;
-        min-width: 0 !important;
-        flex: 1 !important;
-    }
-    div[data-testid="stMetricValue"] {
-        font-size: 1.4rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    /* Améliorer lisibilité */
-    div[data-testid="stMetricValue"] {
-        color: #FFFFFF !important;
-        font-weight: 700 !important;
-    }
-    div[data-testid="stMetricLabel"] {
-        color: #A0AEC0 !important;
-        font-weight: 500 !important;
-    }
-    div[data-testid="stMetricDelta"] {
-        font-weight: 600 !important;
-    }
-    p, li, span {
-        color: #E2E8F0 !important;
-    }
-    .stDataFrame td, .stDataFrame th {
-        color: #E2E8F0 !important;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -198,45 +152,6 @@ def line_chart(series_dict: dict, colors: list, h=320, tick_suffix="", fill=Fals
     fig.update_layout(L)
     return fig
 
-@st.cache_data(ttl=900, show_spinner=False)
-def get_finnhub_calendar(api_key: str) -> pd.DataFrame:
-    try:
-        r = requests.get(
-            "https://nfs.faireconomy.media/ff_calendar_thisweek.json",
-            timeout=15,
-        )
-        if r.status_code != 200:
-            return pd.DataFrame()
-        rows = r.json()
-        if not isinstance(rows, list):
-            return pd.DataFrame()
-        if not rows:
-            return pd.DataFrame()
-
-        out = pd.DataFrame(rows)
-        needed = {
-            "date": "Date",
-            "country": "Pays",
-            "title": "Evenement",
-            "impact": "Impact",
-            "previous": "Valeur_precedente",
-            "forecast": "Valeur_estimee",
-        }
-        for c in needed:
-            if c not in out.columns:
-                out[c] = None
-        out = out[list(needed.keys())].rename(columns=needed)
-        out["Date"] = pd.to_datetime(out["Date"], errors="coerce").dt.strftime("%Y-%m-%d %H:%M")
-        out["Impact"] = out["Impact"].fillna("").astype(str).str.lower()
-        out["Pays"] = out["Pays"].fillna("").astype(str).str.upper()
-        out["Evenement"] = out["Evenement"].fillna("—")
-        out["Valeur_precedente"] = out["Valeur_precedente"].fillna("—").astype(str)
-        out["Valeur_estimee"] = out["Valeur_estimee"].fillna("—").astype(str)
-        out = out.dropna(subset=["Date"]).sort_values("Date")
-        return out
-    except:
-        return pd.DataFrame()
-
 
 # ───────────────────────────────────────
 # CHARGEMENT FRED
@@ -275,14 +190,13 @@ st.divider()
 # ───────────────────────────────────────
 # ONGLETS
 # ───────────────────────────────────────
-tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📈 Taux & Inflation",
     "📊 PIB & Conso",
     "📉 Courbe des taux",
     "👷 Emploi",
     "🏦 Banques centrales",
     "⚠️ Récession",
-    "🗓️ Calendrier",
 ])
 
 
@@ -589,85 +503,6 @@ with tab6:
             </div>
         </div>
         """, unsafe_allow_html=True)
-
-with tab7:
-    cal_df = get_finnhub_calendar(FINNHUB_KEY)
-    if cal_df.empty:
-        st.info("Aucun événement à venir")
-    else:
-        impact_map = {"high": "High", "medium": "Medium", "low": "Low"}
-        impact_levels = [impact_map.get(i, i.title()) for i in sorted(cal_df["Impact"].dropna().unique()) if i]
-        impact_levels = [i for i in ["High", "Medium", "Low"] if i in impact_levels] or ["High", "Medium", "Low"]
-        country_options = sorted([c for c in cal_df["Pays"].dropna().unique() if c])
-
-        f1, f2 = st.columns([2, 2])
-        with f1:
-            selected_impacts = st.multiselect(
-                "Impact",
-                ["High", "Medium", "Low"],
-                default=impact_levels,
-                key="macro_calendar_impacts",
-            )
-        with f2:
-            selected_countries = st.multiselect(
-                "Pays",
-                country_options,
-                default=country_options[: min(8, len(country_options))],
-                key="macro_calendar_countries",
-            )
-
-        filt = cal_df.copy()
-        if selected_impacts:
-            filt = filt[filt["Impact"].map(lambda x: impact_map.get(x, x.title()) in selected_impacts)]
-        if selected_countries:
-            filt = filt[filt["Pays"].isin(selected_countries)]
-
-        if filt.empty:
-            st.info("Aucun événement à venir")
-        else:
-            def impact_badge(v: str) -> str:
-                v = (v or "").lower()
-                if v == "high":
-                    return "<span style='color:#ef5350; font-weight:700;'>HIGH</span>"
-                if v == "medium":
-                    return "<span style='color:#f0b429; font-weight:700;'>MEDIUM</span>"
-                return "<span style='color:#8b9ab0; font-weight:700;'>LOW</span>"
-
-            rows_html = []
-            for _, r in filt.iterrows():
-                rows_html.append(
-                    "<tr>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35; color:#e0e0e0;'>{r['Date']}</td>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35; color:#e0e0e0;'>{r['Pays']}</td>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35; color:#e0e0e0;'>{r['Evenement']}</td>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35;'>{impact_badge(r['Impact'])}</td>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35; color:#8b9ab0;'>{r['Valeur_precedente']}</td>"
-                    f"<td style='padding:10px 8px; border-bottom:1px solid #2a2d35; color:#8b9ab0;'>{r['Valeur_estimee']}</td>"
-                    "</tr>"
-                )
-
-            st.markdown(
-                f"""
-                <div class='recession-card' style='padding: 14px 16px;'>
-                    <table style='width:100%; border-collapse:collapse; font-size:0.82rem;'>
-                        <thead>
-                            <tr>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Date</th>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Pays</th>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Événement</th>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Impact</th>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Valeur précédente</th>
-                                <th style='text-align:left; padding:8px; color:#8b9ab0; border-bottom:1px solid #2a2d35;'>Valeur estimée</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {''.join(rows_html)}
-                        </tbody>
-                    </table>
-                </div>
-                """,
-                unsafe_allow_html=True,
-            )
 
 
 st.divider()
