@@ -791,7 +791,10 @@ with tab_custom:
 
 
 st.divider()
-st.markdown(
-    "<p class='caption' style='text-align:center;'>AlphaDesk v1.0 &nbsp;·&nbsp; Signals · Yahoo Finance</p>",
-    unsafe_allow_html=True,
-)
+st.markdown("""
+<p style="text-align:center; color:#555e6e; font-size:0.75rem; line-height:1.6;">
+⚠️ <b>Avertissement</b> — Les signaux affichés (BUY/SELL/HOLD) sont générés automatiquement à titre informatif uniquement.<br>
+Ils ne constituent pas un conseil en investissement. Investir comporte des risques de perte en capital.<br>
+Consultez un professionnel avant toute décision financière.
+</p>
+""", unsafe_allow_html=True)
