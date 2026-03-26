@@ -117,6 +117,32 @@ st.markdown("""
     }
     .badge-auto { background:#1a3a2a; color:#22c55e; border:1px solid #22c55e44; }
     .badge-manual { background:#1e1e2e; color:#8b9ab0; border:1px solid #2a2d35; }
+
+    [data-testid="stMetricValue"] {
+        color: #E0E0E0 !important;
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        font-variant-numeric: tabular-nums !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #8b9ab0 !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+    }
+
+    [data-testid="stMetricDelta"] > div {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stMetricDelta"] svg {
+        display: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 

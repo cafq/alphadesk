@@ -71,6 +71,32 @@ st.markdown("""
         letter-spacing: 0.1em;
         margin-bottom: 12px;
     }
+
+    [data-testid="stMetricValue"] {
+        color: #E0E0E0 !important;
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        font-variant-numeric: tabular-nums !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #8b9ab0 !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+    }
+
+    [data-testid="stMetricDelta"] > div {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stMetricDelta"] svg {
+        display: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 

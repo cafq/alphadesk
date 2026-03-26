@@ -111,6 +111,32 @@ st.markdown("""
     .badge-score-neg { background:#3a1a1a; color:#ef5350; padding:2px 8px; border-radius:4px; font-size:0.68rem; font-weight:700; }
     .badge-score-neu { background:#1e2228; color:#8b9ab0; padding:2px 8px; border-radius:4px; font-size:0.68rem; font-weight:700; }
     .source-badge { background:#1c2333; color:#4fc3f7; padding:2px 8px; border-radius:4px; font-size:0.68rem; font-weight:700; margin-right:6px; }
+
+    [data-testid="stMetricValue"] {
+        color: #E0E0E0 !important;
+        font-size: 1.4rem !important;
+        font-weight: 600 !important;
+        font-variant-numeric: tabular-nums !important;
+        overflow: visible !important;
+        white-space: nowrap !important;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #8b9ab0 !important;
+        font-size: 0.7rem !important;
+        font-weight: 600 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.1em !important;
+    }
+
+    [data-testid="stMetricDelta"] > div {
+        font-size: 0.78rem !important;
+        font-weight: 500 !important;
+    }
+
+    [data-testid="stMetricDelta"] svg {
+        display: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
