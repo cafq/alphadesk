@@ -1,3 +1,12 @@
+import os
+import sys
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.append(ROOT_DIR)
+from utils.ai_assistant import render_chat_widget, build_context
+
+render_chat_widget("markets")
+
 # pages/1_Markets.py
 
 import streamlit as st
