@@ -259,7 +259,8 @@ def render_chat_widget(
                             history=st.session_state[history_key][:-1],
                         )
                         st.session_state[history_key].append({"role": "assistant", "content": answer})
-                        st.session_state[input_key] = ""
+                        if input_key in st.session_state:
+                            del st.session_state[input_key]
                         st.rerun()
                     except Exception as e:
                         st.error(f"Erreur : {e}")
@@ -268,5 +269,6 @@ def render_chat_widget(
 
             if col_clear.button("Effacer", use_container_width=True, key=f"{page_key}_clear"):
                 st.session_state[history_key] = []
-                st.session_state[input_key] = ""
+                if input_key in st.session_state:
+                    del st.session_state[input_key]
                 st.rerun()
