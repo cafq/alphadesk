@@ -9,4 +9,5 @@ plotly
 fredapi
 finnhub-python
 newsapi-python
+groq
 
