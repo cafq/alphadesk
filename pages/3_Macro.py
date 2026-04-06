@@ -115,6 +115,15 @@ st.markdown("""
     [data-testid="stMetricDelta"] svg {
         display: none !important;
     }
+    div.stButton > button {
+        background-color: #4F46E5 !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 0.8rem !important;
+    }
+    div.stButton > button:hover { background-color: #4338ca !important; }
     </style>
 """, unsafe_allow_html=True)
 
@@ -527,17 +536,11 @@ with tab6:
     """, unsafe_allow_html=True)
 
     for icon, label, detail in signals_list:
-        st.markdown(f"""
-        <div style='display:flex; align-items:center; gap:12px; padding:10px 16px;
-                    background:#1c1f26; border-radius:8px; margin-bottom:6px;
-                    border:1px solid #2a2d35;'>
-            <span style='font-size:1.1rem;'>{icon}</span>
-            <div>
-                <div style='color:#e0e0e0; font-size:0.88rem; font-weight:600;'>{label}</div>
-                {f"<div style='color:#8b9ab0; font-size:0.75rem;'>{detail}</div>" if detail else ""}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
+        detail_html = f"<div style='color:#8b9ab0; font-size:0.75rem;'>{detail}</div>" if detail != "" else ""
+
+        html_string = f"<div style='display:flex; align-items:center; gap:12px; padding:10px 16px; background:#1c1f26; border-radius:8px; margin-bottom:6px; border:1px solid #2a2d35;'><span style='font-size:1.1rem;'>{icon}</span><div><div style='color:#e0e0e0; font-size:0.88rem; font-weight:600;'>{label}</div>{detail_html}</div></div>"
+
+        st.markdown(html_string, unsafe_allow_html=True)
 
 
 st.divider()
