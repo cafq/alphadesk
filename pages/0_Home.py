@@ -4,6 +4,7 @@ ROOT_DIR = _os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.append(ROOT_DIR)
 from utils.ai_assistant import render_chat_widget, build_context
+from utils.theme import apply_global_theme
 
 render_chat_widget("home")
 
@@ -43,12 +44,13 @@ st.set_page_config(
     page_title="AlphaDesk",
     page_icon="▲",
     layout="wide",
-    initial_sidebar_state="collapsed",
+    initial_sidebar_state="expanded",
 )
 
 # ───────────────────────────────────────
 # STYLE
 # ───────────────────────────────────────
+apply_global_theme()
 st.markdown("""
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
